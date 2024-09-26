@@ -25,7 +25,11 @@ variable "account_email" {
 
 }
 
-variable "copilot_password" {
-  type = string
+variable "copilot_service_account_username" {
+  type    = string
+  default = "copilot_service_account"
+}
 
+variable "copilot_service_account_password" {
+  type = string
 }

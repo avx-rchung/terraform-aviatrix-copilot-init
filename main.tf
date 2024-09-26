@@ -147,9 +147,9 @@ resource "terracurl_request" "add_copilot_service_account" {
   request_body = jsonencode({
     "action" : "add_account_user",
     "CID" : local.controller_cid,
-    "username" : "copilot_service_account",
+    "username" : var.copilot_service_account_username,
     "email" : var.account_email,
-    "password" : var.copilot_password,
+    "password" : var.copilot_service_account_password,
     "groups" : local.permission_group,
   })
 
@@ -206,6 +206,37 @@ resource "terracurl_request" "enable_copilot_association" {
       error_message = "Failed to associate copilot: ${jsondecode(self.response)["reason"]}"
     }
 
+    ignore_changes = all
+  }
+
+  depends_on = [terracurl_request.add_permission_group]
+}
+
+#Initialize Copilot
+resource "terracurl_request" "copilot_init_simple" {
+  name            = "associate_copilot"
+  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  method          = "POST"
+  skip_tls_verify = true
+  request_body = jsonencode({
+    "taskserver" : {
+      "username" : var.copilot_service_account_username,
+      "password" : var.copilot_service_account_password,
+    }
+  })
+
+  headers = {
+    Content-Type = "application/json"
+  }
+
+  response_codes = [
+    200,
+  ]
+
+  max_retry      = 20
+  retry_interval = 15
+
+  lifecycle {
     ignore_changes = all
   }
 
