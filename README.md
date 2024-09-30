@@ -29,9 +29,9 @@ key | value
 :--- | :---
 avx_controller_public_ip | Public IP of the controller
 avx_controller_admin_password | Admin password for the controller
-avx_copilot_public_ip | 
-account_email | 
-copilot_service_account_password | 
+avx_copilot_public_ip | Public IP of Copilot
+service_account_email | Email address for the service account
+copilot_service_account_password | Desired password for the service account
 
 The following variables are optional:
 

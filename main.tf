@@ -148,7 +148,7 @@ resource "terracurl_request" "add_copilot_service_account" {
     "action" : "add_account_user",
     "CID" : local.controller_cid,
     "username" : var.copilot_service_account_username,
-    "email" : var.account_email,
+    "email" : var.service_account_email,
     "password" : var.copilot_service_account_password,
     "groups" : local.permission_group,
   })
