@@ -222,6 +222,7 @@ resource "terracurl_request" "configure_syslog" {
   request_body = jsonencode({
     action   = "enable_remote_syslog_logging",
     CID      = local.controller_cid,
+    name     = "Copilot",
     server   = var.avx_copilot_public_ip,
     port     = "5000",
     protocol = "UDP",
