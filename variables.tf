@@ -33,3 +33,13 @@ variable "copilot_service_account_password" {
   type      = string
   sensitive = true
 }
+
+variable "configure_syslog" {
+  type    = bool
+  default = true
+}
+
+variable "configure_netflow" {
+  type    = bool
+  default = true
+}

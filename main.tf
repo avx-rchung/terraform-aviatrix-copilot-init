@@ -7,9 +7,9 @@ data "http" "controller_login" {
     "Content-Type" = "application/json"
   }
   request_body = jsonencode({
-    "action" : "login",
-    "username" : var.avx_controller_admin_username,
-    "password" : var.avx_controller_admin_password,
+    action   = "login",
+    username = var.avx_controller_admin_username,
+    password = var.avx_controller_admin_password,
   })
   retry {
     attempts     = 30
@@ -30,9 +30,9 @@ resource "terracurl_request" "add_permission_group" {
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
-    "action" : "add_permission_group",
-    "CID" : local.controller_cid,
-    "group_name" : local.permission_group,
+    action     = "add_permission_group",
+    CID        = local.controller_cid,
+    group_name = local.permission_group,
   })
 
   headers = {
@@ -65,10 +65,10 @@ resource "terracurl_request" "add_permissions_to_rbac_group" {
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
-    "action" : "add_permissions_to_rbac_group",
-    "CID" : local.controller_cid,
-    "group_name" : local.permission_group,
-    "permissions" : local.rbac_permissions,
+    action      = "add_permissions_to_rbac_group",
+    CID         = local.controller_cid,
+    group_name  = local.permission_group,
+    permissions = local.rbac_permissions,
   })
 
   headers = {
@@ -101,10 +101,10 @@ resource "terracurl_request" "add_access_accounts_to_rbac_group" {
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
-    "action" : "add_access_accounts_to_rbac_group",
-    "CID" : local.controller_cid,
-    "group_name" : local.permission_group,
-    "accounts" : "all",
+    action     = "add_access_accounts_to_rbac_group",
+    CID        = local.controller_cid,
+    group_name = local.permission_group,
+    accounts   = "all",
   })
 
   headers = {
@@ -127,7 +127,10 @@ resource "terracurl_request" "add_access_accounts_to_rbac_group" {
     ignore_changes = all
   }
 
-  depends_on = [terracurl_request.add_permission_group]
+  depends_on = [
+    terracurl_request.add_permission_group,
+    terracurl_request.add_copilot_service_account
+  ]
 }
 
 #Add copilot service account
@@ -137,12 +140,12 @@ resource "terracurl_request" "add_copilot_service_account" {
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
-    "action" : "add_account_user",
-    "CID" : local.controller_cid,
-    "username" : var.copilot_service_account_username,
-    "email" : var.service_account_email,
-    "password" : var.copilot_service_account_password,
-    "groups" : local.permission_group,
+    action   = "add_account_user",
+    CID      = local.controller_cid,
+    username = var.copilot_service_account_username,
+    email    = var.service_account_email,
+    password = var.copilot_service_account_password,
+    groups   = local.permission_group,
   })
 
   headers = {
@@ -178,10 +181,10 @@ resource "terracurl_request" "enable_copilot_association" {
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
-    "action" : "associate_copilot",
-    "CID" : local.controller_cid,
-    "operation" : "enable",
-    "copilot_ip" : var.avx_copilot_public_ip,
+    action     = "associate_copilot",
+    CID        = local.controller_cid,
+    operation  = "enable",
+    copilot_ip = var.avx_copilot_public_ip,
   })
 
   headers = {
@@ -210,6 +213,87 @@ resource "terracurl_request" "enable_copilot_association" {
   ]
 }
 
+#Configure Syslog to Copilot
+resource "terracurl_request" "configure_syslog" {
+  name            = "configure_syslog"
+  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  method          = "POST"
+  skip_tls_verify = true
+  request_body = jsonencode({
+    action   = "enable_remote_syslog_logging",
+    CID      = local.controller_cid,
+    server   = var.avx_copilot_public_ip,
+    port     = "6514",
+    protocol = "UDP",
+    index    = "9",
+  })
+
+  headers = {
+    Content-Type = "application/json"
+  }
+
+  response_codes = [
+    200,
+  ]
+
+  max_retry      = 5
+  retry_interval = 1
+
+  lifecycle {
+    postcondition {
+      condition     = jsondecode(self.response)["return"]
+      error_message = "Failed to configure copilot as syslog server: ${jsondecode(self.response)["reason"]}"
+    }
+
+    ignore_changes = all
+  }
+
+  depends_on = [
+    terracurl_request.add_permission_group,
+    terracurl_request.add_copilot_service_account,
+  ]
+}
+
+#Configure Netflow to Copilot
+resource "terracurl_request" "configure_netflow" {
+  name            = "configure_syslog"
+  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  method          = "POST"
+  skip_tls_verify = true
+  request_body = jsonencode({
+    action    = "enable_netflow_agent",
+    CID       = local.controller_cid,
+    server_ip = var.avx_copilot_public_ip,
+    port      = "31283",
+    version   = "9",
+  })
+
+  headers = {
+    Content-Type = "application/json"
+  }
+
+  response_codes = [
+    200,
+  ]
+
+  max_retry      = 5
+  retry_interval = 1
+
+  lifecycle {
+    postcondition {
+      condition     = jsondecode(self.response)["return"]
+      error_message = "Failed to configure copilot as syslog server: ${jsondecode(self.response)["reason"]}"
+    }
+
+    ignore_changes = all
+  }
+
+  depends_on = [
+    terracurl_request.add_permission_group,
+    terracurl_request.add_copilot_service_account,
+  ]
+}
+
 #Initialize Copilot
 resource "terracurl_request" "copilot_init_simple" {
   name            = "copilot_init_simple"
@@ -217,9 +301,9 @@ resource "terracurl_request" "copilot_init_simple" {
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
-    "taskserver" : {
-      "username" : var.copilot_service_account_username,
-      "password" : var.copilot_service_account_password,
+    taskserver = {
+      username = var.copilot_service_account_username,
+      password = var.copilot_service_account_password,
     }
   })
 

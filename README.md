@@ -6,18 +6,18 @@ This module initializes a freshly deployed copilot.
 ### Compatibility
 Module version | Terraform version
 :--- | :---
-v1.0.0 | >= 1.3
+v1.0.1 | >= 1.3
 
 ### Usage Example
 ```hcl
 module "copilot_init" {
   source  = "terraform-aviatrix-modules/copilot-init/aviatrix"
-  version = "1.0.0"
+  version = "1.0.1"
 
   avx_controller_public_ip         = "1.2.3.4"
   avx_controller_admin_password    = "mysecretpassword"
   avx_copilot_public_ip            = "2.3.4.5"
-  account_email                    = "admin@domain.com"
+  service_account_email            = "admin@domain.com"
   copilot_service_account_password = "mysecretpassword"
 }
 ```
@@ -39,6 +39,8 @@ key | default | value
 :---|:---|:---
 avx_controller_admin_username | Admin username for the controller | admin
 copilot_service_account_username | Service account name for Copilot | copilot_service_account
+configure_syslog | Enable configuration of syslog | true
+configure_netflow | Enable configuration of netflow | true
 
 ### Outputs
 This module will return the following outputs:
