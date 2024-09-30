@@ -30,5 +30,6 @@ variable "copilot_service_account_username" {
 }
 
 variable "copilot_service_account_password" {
-  type = string
+  type      = string
+  sensitive = true
 }
