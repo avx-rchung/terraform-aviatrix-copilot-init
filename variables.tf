@@ -22,7 +22,6 @@ variable "avx_copilot_public_ip" {
 
 variable "account_email" {
   type = string
-
 }
 
 variable "copilot_service_account_username" {
