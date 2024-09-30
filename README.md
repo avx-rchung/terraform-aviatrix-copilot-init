@@ -11,7 +11,7 @@ v1.0.0 | >= 1.3
 ### Usage Example
 ```hcl
 module "copilot_init" {
-  source  = "terraform-aviatrix-modules/copilot_init/aviatrix"
+  source  = "terraform-aviatrix-modules/copilot-init/aviatrix"
   version = "1.0.0"
 
   avx_controller_public_ip         = "1.2.3.4"
