@@ -1,5 +1,5 @@
 locals {
-  controller_cid = jsondecode(terracurl_request.controller_login.response)["CID"]
+  controller_cid = jsondecode(data.http.controller_login.response_body)["CID"]
 
   permission_group = "copilot_permission"
   rbac_permissions = "all_write"

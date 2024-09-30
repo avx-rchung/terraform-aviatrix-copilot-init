@@ -1,33 +1,25 @@
 #Login, obtain CID.
-resource "terracurl_request" "controller_login" {
-  name            = "controller_login"
-  url             = "https://${var.avx_controller_public_ip}/v2/api"
-  method          = "POST"
-  skip_tls_verify = true
+data "http" "controller_login" {
+  url      = "https://${var.avx_controller_public_ip}/v2/api"
+  insecure = true
+  method   = "POST"
+  request_headers = {
+    "Content-Type" = "application/json"
+  }
   request_body = jsonencode({
     "action" : "login",
     "username" : var.avx_controller_admin_username,
     "password" : var.avx_controller_admin_password,
   })
-
-  headers = {
-    Content-Type = "application/json"
+  retry {
+    attempts     = 30
+    min_delay_ms = 10000
   }
-
-  response_codes = [
-    200,
-  ]
-
-  max_retry      = 5
-  retry_interval = 1
-
   lifecycle {
     postcondition {
-      condition     = jsondecode(self.response)["return"]
-      error_message = "Failed to login to the controller: ${jsondecode(self.response)["reason"]}"
+      condition     = jsondecode(self.response_body)["return"]
+      error_message = "Failed to login to the controller: ${jsondecode(self.response_body)["reason"]}"
     }
-
-    ignore_changes = all
   }
 }
 
@@ -63,7 +55,7 @@ resource "terracurl_request" "add_permission_group" {
     ignore_changes = all
   }
 
-  depends_on = [terracurl_request.controller_login]
+  depends_on = [data.http.controller_login]
 }
 
 #Add permissions to RBAC Group
@@ -173,7 +165,10 @@ resource "terracurl_request" "add_copilot_service_account" {
     ignore_changes = all
   }
 
-  depends_on = [terracurl_request.add_permission_group]
+  depends_on = [
+    terracurl_request.add_permission_group,
+    terracurl_request.add_permissions_to_rbac_group
+  ]
 }
 
 #Add copilot service account
