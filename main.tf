@@ -223,7 +223,7 @@ resource "terracurl_request" "configure_syslog" {
     action   = "enable_remote_syslog_logging",
     CID      = local.controller_cid,
     server   = var.avx_copilot_public_ip,
-    port     = "6514",
+    port     = "5000",
     protocol = "UDP",
     index    = "9",
   })
