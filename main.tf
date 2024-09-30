@@ -209,13 +209,16 @@ resource "terracurl_request" "enable_copilot_association" {
     ignore_changes = all
   }
 
-  depends_on = [terracurl_request.add_permission_group]
+  depends_on = [
+    terracurl_request.add_permission_group,
+    terracurl_request.add_copilot_service_account,
+  ]
 }
 
 #Initialize Copilot
 resource "terracurl_request" "copilot_init_simple" {
-  name            = "associate_copilot"
-  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  name            = "copilot_init_simple"
+  url             = "https://${var.avx_copilot_public_ip}/v1/api/single-node"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
@@ -226,19 +229,23 @@ resource "terracurl_request" "copilot_init_simple" {
   })
 
   headers = {
-    Content-Type = "application/json"
+    Content-Type = "application/json",
+    CID          = local.controller_cid
   }
 
   response_codes = [
     200,
   ]
 
-  max_retry      = 20
-  retry_interval = 15
+  max_retry      = 5
+  retry_interval = 1
 
   lifecycle {
     ignore_changes = all
   }
 
-  depends_on = [terracurl_request.add_permission_group]
+  depends_on = [
+    terracurl_request.add_permission_group,
+    terracurl_request.add_copilot_service_account,
+  ]
 }
