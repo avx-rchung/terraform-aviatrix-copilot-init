@@ -20,7 +20,7 @@ variable "avx_copilot_public_ip" {
   description = "aviatrix copilot public ip address(required)"
 }
 
-variable "account_email" {
+variable "service_account_email" {
   type = string
 }
 
