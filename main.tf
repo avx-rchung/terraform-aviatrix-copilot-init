@@ -1,6 +1,6 @@
 #Login, obtain CID.
 data "http" "controller_login" {
-  url      = "https://${var.avx_controller_public_ip}/v2/api"
+  url      = "https://${var.controller_public_ip}/v2/api"
   insecure = true
   method   = "POST"
   request_headers = {
@@ -8,8 +8,8 @@ data "http" "controller_login" {
   }
   request_body = jsonencode({
     action   = "login",
-    username = var.avx_controller_admin_username,
-    password = var.avx_controller_admin_password,
+    username = var.controller_admin_username,
+    password = var.controller_admin_password,
   })
   retry {
     attempts     = 30
@@ -26,7 +26,7 @@ data "http" "controller_login" {
 #Create Copilot permission group
 resource "terracurl_request" "add_permission_group" {
   name            = "add_permission_group"
-  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
@@ -61,7 +61,7 @@ resource "terracurl_request" "add_permission_group" {
 #Add permissions to RBAC Group
 resource "terracurl_request" "add_permissions_to_rbac_group" {
   name            = "add_permission_group"
-  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
@@ -97,7 +97,7 @@ resource "terracurl_request" "add_permissions_to_rbac_group" {
 #Add access account to RBAC Group
 resource "terracurl_request" "add_access_accounts_to_rbac_group" {
   name            = "add_permission_group"
-  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
@@ -136,7 +136,7 @@ resource "terracurl_request" "add_access_accounts_to_rbac_group" {
 #Add copilot service account
 resource "terracurl_request" "add_copilot_service_account" {
   name            = "add_account_user"
-  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
@@ -177,14 +177,14 @@ resource "terracurl_request" "add_copilot_service_account" {
 #Add copilot service account
 resource "terracurl_request" "enable_copilot_association" {
   name            = "associate_copilot"
-  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
     action     = "associate_copilot",
     CID        = local.controller_cid,
     operation  = "enable",
-    copilot_ip = var.avx_copilot_public_ip,
+    copilot_ip = var.copilot_public_ip,
   })
 
   headers = {
@@ -216,14 +216,14 @@ resource "terracurl_request" "enable_copilot_association" {
 #Configure Syslog to Copilot
 resource "terracurl_request" "configure_syslog" {
   name            = "configure_syslog"
-  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
     action   = "enable_remote_syslog_logging",
     CID      = local.controller_cid,
     name     = "Copilot",
-    server   = var.avx_copilot_public_ip,
+    server   = var.copilot_public_ip,
     port     = "5000",
     protocol = "UDP",
     index    = "9",
@@ -258,13 +258,13 @@ resource "terracurl_request" "configure_syslog" {
 #Configure Netflow to Copilot
 resource "terracurl_request" "configure_netflow" {
   name            = "configure_syslog"
-  url             = "https://${var.avx_controller_public_ip}/v2/api"
+  url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
     action    = "enable_netflow_agent",
     CID       = local.controller_cid,
-    server_ip = var.avx_copilot_public_ip,
+    server_ip = var.copilot_public_ip,
     port      = "31283",
     version   = "9",
   })
@@ -298,7 +298,7 @@ resource "terracurl_request" "configure_netflow" {
 #Initialize Copilot
 resource "terracurl_request" "copilot_init_simple" {
   name            = "copilot_init_simple"
-  url             = "https://${var.avx_copilot_public_ip}/v1/api/single-node"
+  url             = "https://${var.copilot_public_ip}/v1/api/single-node"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({

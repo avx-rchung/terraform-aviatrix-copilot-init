@@ -1,21 +1,21 @@
-variable "avx_controller_public_ip" {
+variable "controller_public_ip" {
   type        = string
   description = "aviatrix controller public ip address(required)"
 }
 
-variable "avx_controller_admin_username" {
+variable "controller_admin_username" {
   type        = string
   default     = "admin"
   description = "aviatrix controller admin username"
 }
 
-variable "avx_controller_admin_password" {
+variable "controller_admin_password" {
   type        = string
   sensitive   = true
   description = "aviatrix controller admin password"
 }
 
-variable "avx_copilot_public_ip" {
+variable "copilot_public_ip" {
   type        = string
   description = "aviatrix copilot public ip address(required)"
 }

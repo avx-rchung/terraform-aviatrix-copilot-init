@@ -1,5 +1,8 @@
 # terraform-aviatrix-copilot-init - release notes
 
+## v1.0.2
+- Clean up variable names
+
 ## v1.0.1
 - Use data source for login (get new CID on every run)
 - Cleanup requests for readability
