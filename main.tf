@@ -215,6 +215,7 @@ resource "terracurl_request" "enable_copilot_association" {
 
 #Configure Syslog to Copilot
 resource "terracurl_request" "configure_syslog" {
+  count           = var.configure_syslog ? 1 : 0
   name            = "configure_syslog"
   url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
@@ -257,6 +258,7 @@ resource "terracurl_request" "configure_syslog" {
 
 #Configure Netflow to Copilot
 resource "terracurl_request" "configure_netflow" {
+  count           = var.configure_netflow ? 1 : 0
   name            = "configure_syslog"
   url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
