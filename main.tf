@@ -34,6 +34,11 @@ resource "terracurl_request" "add_permission_group" {
     CID        = local.controller_cid,
     group_name = local.permission_group,
   })
+  destroy_request_body = jsonencode({
+    action     = "delete_permission_group",
+    CID        = local.controller_cid,
+    group_name = local.permission_group,
+  })
 
   headers = {
     Content-Type = "application/json"
@@ -60,12 +65,18 @@ resource "terracurl_request" "add_permission_group" {
 
 #Add permissions to RBAC Group
 resource "terracurl_request" "add_permissions_to_rbac_group" {
-  name            = "add_permission_group"
+  name            = "add_permissions_to_rbac_group"
   url             = "https://${var.controller_public_ip}/v2/api"
   method          = "POST"
   skip_tls_verify = true
   request_body = jsonencode({
     action      = "add_permissions_to_rbac_group",
+    CID         = local.controller_cid,
+    group_name  = local.permission_group,
+    permissions = local.rbac_permissions,
+  })
+  destroy_request_body = jsonencode({
+    action      = "delete_permissions_from_rbac_group",
     CID         = local.controller_cid,
     group_name  = local.permission_group,
     permissions = local.rbac_permissions,
@@ -102,6 +113,12 @@ resource "terracurl_request" "add_access_accounts_to_rbac_group" {
   skip_tls_verify = true
   request_body = jsonencode({
     action     = "add_access_accounts_to_rbac_group",
+    CID        = local.controller_cid,
+    group_name = local.permission_group,
+    accounts   = "all",
+  })
+  destroy_request_body = jsonencode({
+    action     = "delete_access_accounts_from_rbac_group",
     CID        = local.controller_cid,
     group_name = local.permission_group,
     accounts   = "all",
@@ -147,6 +164,11 @@ resource "terracurl_request" "add_copilot_service_account" {
     password = var.copilot_service_account_password,
     groups   = local.permission_group,
   })
+  destroy_request_body = jsonencode({
+    action   = "delete_account_user",
+    CID      = local.controller_cid,
+    username = var.copilot_service_account_username,
+  })
 
   headers = {
     Content-Type = "application/json"
@@ -185,6 +207,11 @@ resource "terracurl_request" "enable_copilot_association" {
     CID        = local.controller_cid,
     operation  = "enable",
     copilot_ip = var.copilot_public_ip,
+  })
+  destroy_request_body = jsonencode({
+    action     = "disable_copilot_association",
+    CID        = local.controller_cid,
+    operation  = "disable",
   })
 
   headers = {
