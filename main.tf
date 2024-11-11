@@ -43,8 +43,8 @@ resource "terracurl_request" "add_permission_group" {
     200,
   ]
 
-  max_retry      = 5
-  retry_interval = 1
+  max_retry      = 60 #In case of upgrades, login will be succesful, but this API call will fail with a 5xx http code. Increasing retries and retry interval to deal with this scenario.
+  retry_interval = 10
 
   lifecycle {
     postcondition {
