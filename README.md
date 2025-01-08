@@ -6,17 +6,17 @@ This module initializes a freshly deployed copilot.
 ### Compatibility
 Module version | Terraform version
 :--- | :---
-v1.0.3 | >= 1.3
+v1.0.4 | >= 1.3
 
 ### Usage Example
 ```hcl
 module "copilot_init" {
   source  = "terraform-aviatrix-modules/copilot-init/aviatrix"
-  version = "1.0.3"
+  version = "1.0.4"
 
-  controller_public_ip         = "1.2.3.4"
-  controller_admin_password    = "mysecretpassword"
-  copilot_public_ip            = "2.3.4.5"
+  controller_public_ip             = "1.2.3.4"
+  controller_admin_password        = "mysecretpassword"
+  copilot_public_ip                = "2.3.4.5"
   service_account_email            = "admin@domain.com"
   copilot_service_account_password = "mysecretpassword"
 }

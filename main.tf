@@ -23,116 +23,6 @@ data "http" "controller_login" {
   }
 }
 
-#Create Copilot permission group
-resource "terracurl_request" "add_permission_group" {
-  name            = "add_permission_group"
-  url             = "https://${var.controller_public_ip}/v2/api"
-  method          = "POST"
-  skip_tls_verify = true
-  request_body = jsonencode({
-    action     = "add_permission_group",
-    CID        = local.controller_cid,
-    group_name = local.permission_group,
-  })
-
-  headers = {
-    Content-Type = "application/json"
-  }
-
-  response_codes = [
-    200,
-  ]
-
-  max_retry      = 60 #In case of upgrades, login will be succesful, but this API call will fail with a 5xx http code. Increasing retries and retry interval to deal with this scenario.
-  retry_interval = 10
-
-  lifecycle {
-    postcondition {
-      condition     = jsondecode(self.response)["return"]
-      error_message = "Failed to add permission group: ${jsondecode(self.response)["reason"]}"
-    }
-
-    ignore_changes = all
-  }
-
-  depends_on = [data.http.controller_login]
-}
-
-#Add permissions to RBAC Group
-resource "terracurl_request" "add_permissions_to_rbac_group" {
-  name            = "add_permission_group"
-  url             = "https://${var.controller_public_ip}/v2/api"
-  method          = "POST"
-  skip_tls_verify = true
-  request_body = jsonencode({
-    action      = "add_permissions_to_rbac_group",
-    CID         = local.controller_cid,
-    group_name  = local.permission_group,
-    permissions = local.rbac_permissions,
-  })
-
-  headers = {
-    Content-Type = "application/json"
-  }
-
-  response_codes = [
-    200,
-  ]
-
-  max_retry      = 5
-  retry_interval = 1
-
-  lifecycle {
-    postcondition {
-      condition     = jsondecode(self.response)["return"]
-      error_message = "Failed to configure rbac: ${jsondecode(self.response)["reason"]}"
-    }
-
-    ignore_changes = all
-  }
-
-  depends_on = [terracurl_request.add_permission_group]
-}
-
-#Add access account to RBAC Group
-resource "terracurl_request" "add_access_accounts_to_rbac_group" {
-  name            = "add_permission_group"
-  url             = "https://${var.controller_public_ip}/v2/api"
-  method          = "POST"
-  skip_tls_verify = true
-  request_body = jsonencode({
-    action     = "add_access_accounts_to_rbac_group",
-    CID        = local.controller_cid,
-    group_name = local.permission_group,
-    accounts   = "all",
-  })
-
-  headers = {
-    Content-Type = "application/json"
-  }
-
-  response_codes = [
-    200,
-  ]
-
-  max_retry      = 5
-  retry_interval = 1
-
-  lifecycle {
-    postcondition {
-      condition     = jsondecode(self.response)["return"]
-      error_message = "Failed to add access accounts to rbac: ${jsondecode(self.response)["reason"]}"
-    }
-
-    ignore_changes = all
-  }
-
-  depends_on = [
-    terracurl_request.add_permission_group,
-    terracurl_request.add_copilot_service_account
-  ]
-}
-
 #Add copilot service account
 resource "terracurl_request" "add_copilot_service_account" {
   name            = "add_account_user"
@@ -145,7 +35,7 @@ resource "terracurl_request" "add_copilot_service_account" {
     username = var.copilot_service_account_username,
     email    = var.service_account_email,
     password = var.copilot_service_account_password,
-    groups   = local.permission_group,
+    groups   = "admin",
   })
 
   headers = {
@@ -156,8 +46,7 @@ resource "terracurl_request" "add_copilot_service_account" {
     200,
   ]
 
-  max_retry      = 5
-  retry_interval = 1
+  timeout = 300
 
   lifecycle {
     postcondition {
@@ -169,8 +58,7 @@ resource "terracurl_request" "add_copilot_service_account" {
   }
 
   depends_on = [
-    terracurl_request.add_permission_group,
-    terracurl_request.add_permissions_to_rbac_group
+    data.http.controller_login
   ]
 }
 
@@ -208,7 +96,6 @@ resource "terracurl_request" "enable_copilot_association" {
   }
 
   depends_on = [
-    terracurl_request.add_permission_group,
     terracurl_request.add_copilot_service_account,
   ]
 }
@@ -251,7 +138,6 @@ resource "terracurl_request" "configure_syslog" {
   }
 
   depends_on = [
-    terracurl_request.add_permission_group,
     terracurl_request.add_copilot_service_account,
   ]
 }
@@ -292,7 +178,6 @@ resource "terracurl_request" "configure_netflow" {
   }
 
   depends_on = [
-    terracurl_request.add_permission_group,
     terracurl_request.add_copilot_service_account,
   ]
 }
@@ -327,7 +212,8 @@ resource "terracurl_request" "copilot_init_simple" {
   }
 
   depends_on = [
-    terracurl_request.add_permission_group,
-    terracurl_request.add_copilot_service_account,
+    terracurl_request.configure_netflow,
+    terracurl_request.configure_syslog,
+    terracurl_request.enable_copilot_association
   ]
 }
