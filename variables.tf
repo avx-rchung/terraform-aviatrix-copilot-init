@@ -43,3 +43,10 @@ variable "configure_netflow" {
   type    = bool
   default = true
 }
+
+# terraform-docs-ignore
+variable "destroy_url" {
+  type        = string
+  description = "Dummy URL used by terracurl during destroy operations."
+  default     = "https://checkip.amazonaws.com"
+}

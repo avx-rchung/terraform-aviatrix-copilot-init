@@ -48,6 +48,9 @@ resource "terracurl_request" "add_copilot_service_account" {
 
   timeout = 300
 
+  destroy_url    = var.destroy_url
+  destroy_method = "GET"
+
   lifecycle {
     postcondition {
       condition     = jsondecode(self.response)["return"]
@@ -85,6 +88,9 @@ resource "terracurl_request" "enable_copilot_association" {
 
   max_retry      = 5
   retry_interval = 1
+
+  destroy_url    = var.destroy_url
+  destroy_method = "GET"
 
   lifecycle {
     postcondition {
@@ -128,6 +134,9 @@ resource "terracurl_request" "configure_syslog" {
   max_retry      = 5
   retry_interval = 1
 
+  destroy_url    = var.destroy_url
+  destroy_method = "GET"
+
   lifecycle {
     postcondition {
       condition     = jsondecode(self.response)["return"]
@@ -168,6 +177,9 @@ resource "terracurl_request" "configure_netflow" {
   max_retry      = 5
   retry_interval = 1
 
+  destroy_url    = var.destroy_url
+  destroy_method = "GET"
+
   lifecycle {
     postcondition {
       condition     = jsondecode(self.response)["return"]
@@ -206,6 +218,9 @@ resource "terracurl_request" "copilot_init_simple" {
 
   max_retry      = 5
   retry_interval = 1
+
+  destroy_url    = var.destroy_url
+  destroy_method = "GET"
 
   lifecycle {
     ignore_changes = all
