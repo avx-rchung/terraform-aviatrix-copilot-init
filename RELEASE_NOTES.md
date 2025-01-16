@@ -1,5 +1,8 @@
 # terraform-aviatrix-copilot-init - release notes
 
+## v1.0.5
+- Use dummy URL for destroy terracurl requests (was causing issue with example.com)
+
 ## v1.0.4
 - Add copilot service account to admin group, in stead of creating a new group.
 
